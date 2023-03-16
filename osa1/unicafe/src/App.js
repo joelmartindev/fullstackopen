@@ -2,7 +2,14 @@ import { useState } from 'react'
 
 const Title = ({title}) => <h1>{title}</h1>
 const Button = ({name, handleClick}) => <button onClick={handleClick}>{name}</button>
-const StatisticsData = ({name, value}) => <tr><td>{name} {value}</td></tr>
+const StatisticsData = ({name, value}) => {
+  return (
+    <tr>
+      <td>{name}</td>
+      <td>{value}</td>
+    </tr>
+  )
+}
 
 const Statistics = ({good, neutral, bad}) => {
 
