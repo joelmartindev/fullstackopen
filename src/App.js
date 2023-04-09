@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import countryDB from './services/countryDB'
+import weatherDB from './services/weatherDB'
 
-const Filter = ({changeFilter}) => {
+const Filter = ({ changeFilter }) => {
   return (<div>
     find countries <input onChange={changeFilter} />
   </div>);
@@ -35,6 +36,7 @@ const Countries = ({ filter, countries }) => {
 
   //if a country has been chosen, display it
   if (countryChoice) {
+
     return (
       <div>
         <h2>{countryChoice.name.common}</h2>
@@ -47,6 +49,7 @@ const Countries = ({ filter, countries }) => {
           )}
         </ul>
         <img src={countryChoice.flags.png} alt={countryChoice.flags.alt} />
+        <Weather countryChoice={countryChoice} />
       </div>
     )
     //else show a list
@@ -82,6 +85,39 @@ const Countries = ({ filter, countries }) => {
         <p>Too many matches, specify another filter</p>
       )
     }
+  }
+}
+
+const Weather = ({ countryChoice }) => {
+  const [weatherData, setWeatherData] = useState('')
+
+  //If a country is chosen, fetch weather data
+  useEffect(() => {
+    if (countryChoice) {
+      weatherDB
+        .getWeather(countryChoice.capital)
+        .then(data => {
+          console.log("weather data", data)
+          setWeatherData(data)
+        })
+    }
+  }, [countryChoice])
+
+  if (weatherData) {
+    return (
+      <div>
+        <h2>Weather in {weatherData.location.name}</h2>
+        <p>temperature {weatherData.current.temp_c} celsius</p>
+        <img src={weatherData.current.condition.icon} alt={weatherData.current.condition.text} />
+        <p>wind {weatherData.current.wind_kph} km/h</p>
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        Loading weather data
+      </div>
+    )
   }
 }
 
