@@ -25,3 +25,5 @@ yarn-error.log*
 /src/
 /public/
 /db.json
+*node_modules
+*.env
