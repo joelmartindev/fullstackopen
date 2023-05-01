@@ -18,8 +18,23 @@ const favoriteBlog = (blogs) => {
     }, {likes: -1})
 }
 
+const mostBlogs = (blogs) => {
+    //Array of authors and their blogs. Adds an author if not found already, otherwise adds to their blog count per blog
+    const authors = blogs.reduce((acc, cur) => {
+        const author = cur.author
+        if (!acc[author]) {
+          acc[author] = { author: author, blogs: 0 }
+        }
+        acc[author].blogs++
+        return acc
+      }, {})
+      
+      return Object.values(authors).reduce((max, cur) => max.blogs > cur.blogs ? max : cur)
+}
+
 module.exports = {
     dummy,
     totalLikes,
-    favoriteBlog
+    favoriteBlog,
+    mostBlogs
 }
