@@ -29,66 +29,97 @@ beforeEach(async () => {
     await blogObject.save()
 })
 
-test('there are 2 blogs', async () => {
-    const response = await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/)
-    expect(response.body).toHaveLength(2)
+describe('Tests on initial blogs', () => {
+
+    test('there are 2 blogs', async () => {
+        const response = await api
+            .get('/api/blogs')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+        expect(response.body).toHaveLength(2)
+    })
+
+    test('there is an id field', async () => {
+        const response = await api.get('/api/blogs')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body[0].id).toBeDefined()
+    })
 })
+describe('Adding blogs', () => {
 
-test('there is an id field', async () => {
-    const response = await api.get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/)
+    test('adding a blog successfully', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                title: 'Testing with Jest',
+                author: 'Test Testerson',
+                url: 'someaddress.com',
+                likes: 1
+            })
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
 
-    expect(response.body[0].id).toBeDefined()
-})
-
-test('adding a blog', async () => {
-    const response = await api.post('/api/blogs')
-        .send({
+        expect(response.body).toMatchObject({
             title: 'Testing with Jest',
             author: 'Test Testerson',
             url: 'someaddress.com',
             likes: 1
         })
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
 
-    expect(response.body).toMatchObject({
-        title: 'Testing with Jest',
-        author: 'Test Testerson',
-        url: 'someaddress.com',
-        likes: 1
+        const newBlogs = await Blog.find({})
+        expect(newBlogs).toHaveLength(3)
     })
 
-    const newBlogs = await Blog.find({})
-    expect(newBlogs).toHaveLength(3)
+    test('likes are 0 if not specified', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                title: 'Testing with Jest',
+                author: 'Test Testerson',
+                url: 'someaddress.com'
+            })
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body.likes).toBe(0)
+    })
+
+    test('if title and url missing, send status code 400', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                title: 'Testing with Jest',
+                author: 'Test Testerson',
+                likes: 1
+            })
+            .expect('Content-Type', /application\/json/)
+            .expect(400)
+    })
 })
 
-test('likes are 0 if not specified', async () => {
-    const response = await api.post('/api/blogs')
-        .send({
-            title: 'Testing with Jest',
-            author: 'Test Testerson',
-            url: 'someaddress.com'
-        })
-        .expect(201)
-        .expect('Content-Type', /application\/json/)
+describe('Deleting blogs', () => {
 
-    expect(response.body.likes).toBe(0)
+    test('deleting a single blog', async () => {
+        const blog = await Blog.find({title: "React patterns 2"})
+        await api.delete(`/api/blogs/${blog[0]._id.toString()}`)
+            .expect(204)
+
+        const blogAfter = await Blog.find({title: "React patterns 2"})
+        expect(blogAfter).toEqual([])
+    })
 })
 
-test('if title and url missing, send status code 400', async () => {
-    const response = await api.post('/api/blogs')
-        .send({
-            title: 'Testing with Jest',
-            author: 'Test Testerson',
-            likes: 1
-        })
-        .expect('Content-Type', /application\/json/)
-        .expect(400)
+describe('Editing blogs', () => {
+
+    test('Editing a single blog', async () => {
+        const blog = await Blog.find({title: "React patterns 2"})
+        blog[0].likes = 3
+        await api.put(`/api/blogs/${blog[0]._id.toString()}`)
+            .send(blog[0])
+            .expect(200)
+
+        const blogAfter = await Blog.find({title: "React patterns 2"})
+        expect(blogAfter[0].likes).toBe(3)
+    })
 })
 
 afterAll(async () => {
