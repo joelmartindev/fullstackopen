@@ -112,9 +112,16 @@ describe('Editing blogs', () => {
 
     test('Editing a single blog', async () => {
         const blog = await Blog.find({title: "React patterns 2"})
-        blog[0].likes = 3
+
+        const newBlog = {
+            title: blog[0].title,
+            author: blog[0].author,
+            url: blog[0].url,
+            likes: blog[0].likes + 1
+        }
         await api.put(`/api/blogs/${blog[0]._id.toString()}`)
-            .send(blog[0])
+            .send(newBlog)
+            .set('Content-Type', 'application/json')
             .expect(200)
 
         const blogAfter = await Blog.find({title: "React patterns 2"})

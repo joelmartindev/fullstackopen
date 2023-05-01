@@ -36,11 +36,12 @@ blogsRouter.delete('/:id', async (request, response, next) => {
   } catch (e) {
     next(e)
   }
-}
-)
+})
+
 blogsRouter.put('/:id', async (request, response, next) => {
 
-  const req = request.body._doc
+  const req = request.body
+
   const blog = {
     title: req.title,
     author: req.author,
