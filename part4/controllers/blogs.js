@@ -1,5 +1,6 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
@@ -8,7 +9,17 @@ blogsRouter.get('/', async (request, response) => {
 
 
 blogsRouter.post('/', async (request, response, next) => {
-  const blog = new Blog(request.body)
+  //I'd use findByID, but it keeps returning null when given a correct id
+  const user = await User.findOne({ username: request.body.username })
+  const { title, author, url, likes } = request.body
+
+  const blog = new Blog({
+    title: title,
+    author: author,
+    url: url,
+    likes: likes,
+    user: user._id
+  })
 
   if (blog.likes === undefined) {
     blog.likes = 0
@@ -21,6 +32,8 @@ blogsRouter.post('/', async (request, response, next) => {
   else {
     try {
       const res = await blog.save()
+      user.blogs = user.blogs.concat(res._id)
+      await user.save()
       response.status(201).json(res)
     } catch (e) {
       next(e)
